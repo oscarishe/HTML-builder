@@ -63,7 +63,7 @@ const copyFolder = (direct, distDirect) => {
             }
             else {            
                 if(file.isDirectory()) {
-                     createDirectory(path.join(projectDist,file.name),);  
+                     createDirectory(path.join(distDirect,file.name));  
                      copyFolder(`${direct}//${file.name}//`, path.join(distDirect,file.name));
                 }
               if(file.isFile()) {   
@@ -114,14 +114,37 @@ const mergeStyle = () => {
             });
           }
         });
-}
+};
 
+const renderPages = () => {
+  
+  fs.readFile(path.join(__dirname, 'template.html'), {encoding: 'utf-8'}, (err, data) => {
+    let template = data;
+      fs.readdir(path.join(__dirname,'components'), (err,files) => {
+      files.forEach(file => {
+        fs.readFile(path.join(__dirname,'components',file), {encoding: 'utf-8'}, (err,data) => {
+        template = template.replace(`{{${file.split('.')[0]}}}`,data);
+        console.log(file);
+        fs.writeFile(path.join(projectDist, 'index.html'), template, (err) => {
+          if (err)
+            console.log(err);
+        });
+      });
+      
+      });
+      });
+      
+  });
+};
 const promise = new Promise((resolve) => {
   createDirectory(projectDist);
   resolve();
 });
 promise.then(()=> {
-  copyFolder(folder,projectDist);
+  createDirectory(path.join(projectDist,'assets'));
+  resolve();
+}).then(()=> {
+  copyFolder(folder,path.join(projectDist,'assets'));
   resolve();
 }).then(()=> {
   createFile('style.css');
@@ -130,6 +153,6 @@ promise.then(()=> {
   mergeStyle();
   resolve();
 }).then(()=> {
-  createFile('index.html');
+  renderPages();
   resolve();
 });
