@@ -26,28 +26,28 @@ const createDirectory = (direct) => {
     });
 };
 const clearDirectory = (direct) => {
-    fs.readdir(direct,
-        { withFileTypes: true }, 
-        (err, files) => {
-      if (err) throw err;
-      else 
-            files.forEach(file =>{
-                if(file.isFile()) {
-        fs.unlink(path.join(direct, file.name), err => {
-          if (err) throw err;
-        });
-      }
-      if(file.isDirectory()) {
-        clearDirectory(path.join(direct,file.name));
-        // fs.rm(path.join(direct, file.name), (error) => {
-        //     if (error) {
-        //       console.log(error);
-        //     }
-        //   });
+  fs.readdir(direct,
+      { withFileTypes: true }, 
+      (err, files) => {
+    if (err) throw err;
+    else 
+          files.forEach(file =>{
+              if(file.isFile()) {
+      fs.unlink(path.join(direct, file.name), err => {
+        if (err) throw err;
+      });
     }
-            });
-    });
-  };
+    if(file.isDirectory()) {
+      clearDirectory(path.join(direct,file.name));
+      // fs.rm(path.join(direct, file.name), (error) => {
+      //     if (error) {
+      //       console.log(error);
+      //     }
+      //   });
+  }
+          });
+  });
+};
 const copyFolder = (direct, distDirect) => {
     fs.readdir(direct, 
     { withFileTypes: true },
@@ -113,7 +113,19 @@ const mergeStyle = () => {
           }
         });
 };
-
+const deleteFolders = async() => {
+  let folders = await fs.promises.readdir(path.join(projectDist,'assets'), {withFileTypes:true});
+  for (let item of folders) {
+    let isDeletable = false;
+    await fs.promises.access(path.join(folder,item.name))
+    .then(()=> {})
+    .catch(async ()=> {
+      isDeletable=true;
+    });
+    if(isDeletable)
+    await fs.promises.rm(path.join(projectDist,'assets',item.name),{recursive:true});
+  }
+};
 const renderPages = async () => {
  
   let components = await fs.promises.readdir(path.join(__dirname,'components'));
@@ -127,33 +139,31 @@ const renderPages = async () => {
     await fs.promises.writeFile(path.join(projectDist, 'index.html'), newIndex);
   }
 };
-
 const promise = new Promise((resolve) => {
   createDirectory(projectDist);
   resolve();
 });
 promise.then(()=> {
   createDirectory(path.join(projectDist,'assets'));
-  console.log('сработал криэйт');
   resolve();
 }).then(()=> {
   clearDirectory(projectDist);
-  console.log('сработал clear');
   resolve();
 }).then(()=> {
   copyFolder(folder,path.join(projectDist,'assets'));
-  console.log('сработал copy');
+  console.log('Папка assets скопирована');
   resolve();
 }).then(()=> {
   createFile('style.css');
-  console.log('сработал createfile');
   resolve();
 }).then(()=> {
   mergeStyle();
-  console.log('сработал mergestyle');
+  console.log('Стили объединены в bundle.css');
   resolve();
 }).then(()=> {
-  console.log('сработал renderpages');
   renderPages();
-  
+  console.log('index.html сформирован');
+  resolve();
+}).then(() => {
+  deleteFolders();
 });
