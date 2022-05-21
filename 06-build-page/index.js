@@ -33,18 +33,17 @@ const clearDirectory = (direct) => {
       else 
             files.forEach(file =>{
                 if(file.isFile()) {
-        fs.unlink(path.join(direct, file), err => {
+        fs.unlink(path.join(direct, file.name), err => {
           if (err) throw err;
         });
       }
       if(file.isDirectory()) {
-        fs.rm(path.join(direct, file), {
-            recursive: true,
-          }, (error) => {
-            if (error) {
-              console.log(error);
-            }
-          });
+        clearDirectory(path.join(direct,file.name));
+        // fs.rm(path.join(direct, file.name), (error) => {
+        //     if (error) {
+        //       console.log(error);
+        //     }
+        //   });
     }
             });
     });
@@ -105,7 +104,6 @@ const mergeStyle = () => {
                       if(text!==null) { fs.appendFile(path.join(projectDist,'style.css'), text, function(error){
                         if(error) throw error; 
                       });
-                    //   console.log(file.name + ' скопирован');
                       }
                     }); 
                   }
@@ -116,43 +114,46 @@ const mergeStyle = () => {
         });
 };
 
-const renderPages = () => {
-  
-  fs.readFile(path.join(__dirname, 'template.html'), {encoding: 'utf-8'}, (err, data) => {
-    let template = data;
-      fs.readdir(path.join(__dirname,'components'), (err,files) => {
-      files.forEach(file => {
-        fs.readFile(path.join(__dirname,'components',file), {encoding: 'utf-8'}, (err,data) => {
-        template = template.replace(`{{${file.split('.')[0]}}}`,data);
-        console.log(file);
-        fs.writeFile(path.join(projectDist, 'index.html'), template, (err) => {
-          if (err)
-            console.log(err);
-        });
-      });
-      
-      });
-      });
-      
-  });
+const renderPages = async () => {
+ 
+  let components = await fs.promises.readdir(path.join(__dirname,'components'));
+  components = components.filter((file)=> {return file.split('.').pop()==='html';});
+  let template = await fs.promises.readFile(path.join(__dirname,'template.html'),'utf-8');
+  await fs.promises.writeFile(path.join(__dirname, 'project-dist', 'index.html'),template);
+  for (let file of components) {
+    let component = await fs.promises.readFile(path.join(__dirname, 'components', file), 'utf-8');
+    let index = await fs.promises.readFile(path.join(projectDist, 'index.html'), 'utf-8');
+    let newIndex = index.replace(`{{${file.split('.')[0]}}}`, component);
+    await fs.promises.writeFile(path.join(projectDist, 'index.html'), newIndex);
+  }
 };
+
 const promise = new Promise((resolve) => {
   createDirectory(projectDist);
   resolve();
 });
 promise.then(()=> {
   createDirectory(path.join(projectDist,'assets'));
+  console.log('сработал криэйт');
+  resolve();
+}).then(()=> {
+  clearDirectory(projectDist);
+  console.log('сработал clear');
   resolve();
 }).then(()=> {
   copyFolder(folder,path.join(projectDist,'assets'));
+  console.log('сработал copy');
   resolve();
 }).then(()=> {
   createFile('style.css');
+  console.log('сработал createfile');
   resolve();
 }).then(()=> {
   mergeStyle();
+  console.log('сработал mergestyle');
   resolve();
 }).then(()=> {
+  console.log('сработал renderpages');
   renderPages();
-  resolve();
+  
 });
