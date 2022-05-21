@@ -115,11 +115,15 @@ const mergeStyle = () => {
 };
 const deleteFolders = async() => {
   let folders = await fs.promises.readdir(path.join(projectDist,'assets'), {withFileTypes:true});
+  folders = folders.filter(item=> {
+      if(item.isDirectory())
+      return item;
+  });
   for (let item of folders) {
     let isDeletable = false;
     await fs.promises.access(path.join(folder,item.name))
     .then(()=> {})
-    .catch(async ()=> {
+    .catch(()=> {
       isDeletable=true;
     });
     if(isDeletable)
