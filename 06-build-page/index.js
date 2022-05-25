@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { resolve } = require('path');
 var path = require('path');
-let folder = __dirname+'\\assets\\';
+let folder = path.join(__dirname,'assets');
 let projectDist = path.join(__dirname, 'project-dist');
 let stylesDist = path.join(__dirname,'styles');
 const readline = require('readline'); 
@@ -39,11 +39,6 @@ const clearDirectory = (direct) => {
     }
     if(file.isDirectory()) {
       clearDirectory(path.join(direct,file.name));
-      // fs.rm(path.join(direct, file.name), (error) => {
-      //     if (error) {
-      //       console.log(error);
-      //     }
-      //   });
   }
           });
   });
@@ -56,19 +51,18 @@ const copyFolder = (direct, distDirect) => {
         console.log(err);
         else {
         files.forEach(file => {
-            fs.stat(direct+file.name, (error, stats) => {
+            fs.stat(path.join(direct,file.name), (error, stats) => {
             if (error) {
                 console.log(error);
             }
             else {            
                 if(file.isDirectory()) {
                      createDirectory(path.join(distDirect,file.name));  
-                     copyFolder(`${direct}//${file.name}//`, path.join(distDirect,file.name));
+                     copyFolder(path.join(direct,file.name), path.join(distDirect,file.name));
                 }
               if(file.isFile()) {   
                 fs.copyFile(path.join(direct,file.name), path.join(distDirect,file.name), (err) => {
                     if (err) throw err;
-                    // console.log(`${file.name} успешно скопирован`);
                   });
                 
                 }

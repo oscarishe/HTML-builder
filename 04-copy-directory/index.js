@@ -1,8 +1,8 @@
 const fs = require('fs');
 const { resolve } = require('path');
 const path = require('path');
-let copyFolder = __dirname+'\\files\\';
-let newFolder = __dirname+'\\files-copy\\';
+let copyFolder = path.join(__dirname,'files');
+let newFolder = path.join(__dirname,'files-copy');
 
 const createDirectory = () => {
   fs.mkdir(path.join(__dirname, 'files-copy'),
@@ -29,7 +29,7 @@ const rewriteDirectory = () => {
       console.log(err);
     else {
       files.forEach(file => {
-        fs.copyFile(copyFolder + file, newFolder + file, (err) => {
+        fs.copyFile(path.join(copyFolder,file), path.join(newFolder,file), (err) => {
           if (err) throw err;
           console.log(`${file} успешно скопирован`);
         });

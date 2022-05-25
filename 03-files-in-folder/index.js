@@ -1,6 +1,6 @@
 const fs = require('fs');
 var path = require('path');
-let folder = __dirname+'\\secret-folder\\';
+let folder = path.join(__dirname,'secret-folder');
 fs.readdir(folder, 
   { withFileTypes: true },
   (err, files) => {
@@ -9,7 +9,7 @@ fs.readdir(folder,
       console.log(err);
     else {
       files.forEach(file => {
-        fs.stat(folder+file.name, (error, stats) => {
+        fs.stat(path.join(folder,file.name), (error, stats) => {
           if (error) {
             console.log(error);
           }

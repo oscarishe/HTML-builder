@@ -1,11 +1,11 @@
 const fs = require('fs');
 const { resolve } = require('path');
 const path = require('path');
-let currentFolder = __dirname + '\\styles\\';
-let newFolder = __dirname + '\\project-dist\\';
+let currentFolder = path.join(__dirname,'styles');
+let newFolder = path.join(__dirname,'project-dist');
 console.log(currentFolder);
 const promise = new Promise((resolve)=> {
-  fs.writeFile(newFolder+'bundle.css', '', (err) => {
+  fs.writeFile(path.join(newFolder,'bundle.css'), '', (err) => {
     if (err)
       console.log(err);
   });
@@ -20,16 +20,16 @@ promise.then(() => {
         console.log(err);
       else {
         files.forEach(file => {
-          fs.stat(currentFolder+file.name, (error) => {
+          fs.stat(path.join(currentFolder,file.name), (error) => {
             if (error) {
               console.log(error);
             }
             else {            
               if(path.extname(file.name)=='.css') {
-                let readStream = fs.createReadStream(currentFolder+file.name, {encoding: 'utf-8'});
+                let readStream = fs.createReadStream(path.join(currentFolder,file.name), {encoding: 'utf-8'});
                 readStream.on('readable', () => {
                   let text = readStream.read();
-                  if(text!==null) { fs.appendFile(newFolder+'bundle.css', text, function(error){
+                  if(text!==null) { fs.appendFile(path.join(newFolder,'bundle.css'), text, function(error){
                     if(error) throw error; 
                   });
                   console.log(file.name + ' скопирован');
